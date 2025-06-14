@@ -8,6 +8,7 @@ package gopainterface
 #include <stdlib.h>
 
 void paStateCallbackCgo(pa_context *pactx, void *userdata);
+void paSubscribeCallbackCgo(pa_context *pactx, pa_subscription_event_type_t t, uint32_t idx, void *userdata);
 
 */
 import "C"
@@ -44,11 +45,12 @@ func Initialize() error {
 
 }
 
-//export PaStateCallback
-func PaStateCallback(pactx *C.pa_context) {
-	fmt.Println("wohoo PaStateCallback callback")
+//export paStateCallback
+func paStateCallback(pactx *C.pa_context, userdata *C.void) {
+	fmt.Println("wohoo paStateCallback callback")
 }
 
+//export paSubscribeCallback
 func paSubscribeCallback(pactx *C.pa_context, subscriptionEventType C.pa_subscription_event_type_t, idx uint32, userdata *C.void) {
 	fmt.Println("wohoo paSubscribeCallback callback")
 }
@@ -85,6 +87,7 @@ func Connect() (bool, error) {
 	}
 
 	C.pa_context_set_state_callback(pa_ctx, (C.pa_context_notify_cb_t)(unsafe.Pointer(C.paStateCallbackCgo)), nil)
+	C.pa_context_set_subscribe_callback(pa_ctx, (C.pa_context_subscribe_cb_t)(unsafe.Pointer(C.paSubscribeCallbackCgo)), nil)
 
 	retval := C.pa_context_connect(pa_ctx, nil, C.PA_CONTEXT_NOFAIL, nil)
 	if retval < 0 {
